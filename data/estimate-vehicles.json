@@ -1,0 +1,173 @@
+{
+  "vehicles": [
+    {
+      "id": "v-1234",
+      "displayId": "#1234",
+      "primeContractorName": "トヨタ車体株式会社",
+      "customerName": "山田 太郎",
+      "plateOffice": "品川",
+      "plateClass": "300",
+      "plateHiragana": "あ",
+      "plateNumber": "1234",
+      "vehicleName": "Toyota RAV4",
+      "entryDate": "2026-05-12",
+      "status": "ai_analyzing",
+      "galleryImages": [
+        {
+          "id": "g1",
+          "capturedAtDisplay": "01:26",
+          "caption": "損傷1（フロントバンパー）",
+          "imageAlt": "フロントバンパー付近"
+        },
+        {
+          "id": "g2",
+          "capturedAtDisplay": "01:27",
+          "caption": "キズ: 深い / へこみ: 中",
+          "imageAlt": "ドアパネル"
+        },
+        {
+          "id": "g3",
+          "capturedAtDisplay": "01:28",
+          "caption": "撮影角度2",
+          "imageAlt": "車両左前"
+        },
+        {
+          "id": "g4",
+          "capturedAtDisplay": "01:30",
+          "caption": "リア周り",
+          "imageAlt": "リヤバンパー"
+        },
+        {
+          "id": "g5",
+          "capturedAtDisplay": "01:31",
+          "caption": "室内",
+          "imageAlt": "ダッシュボード"
+        },
+        {
+          "id": "g6",
+          "capturedAtDisplay": "01:32",
+          "caption": "タイヤ・ホイール",
+          "imageAlt": "左前輪"
+        }
+      ],
+      "aiAnalysisSummary": "フロントバンパー左側に纵深のキズと幅25cm程度のへこみを検出。左フロントフェンダーに線状キズ。塗装割れの可能性あり。ドア交換は現時点で不要と推定。",
+      "mamoEstimate": {
+        "title": "マモさんの見積（PDF）",
+        "thumbnailCaption": "1234_見積.pdf"
+      },
+      "aiLearning": {
+        "progressPercent": 88,
+        "modelsTrained": 14
+      },
+      "aiDraftEstimate": {
+        "lines": [
+          {
+            "id": "l1",
+            "label": "フロントバンパーカバー（交換）",
+            "amountYen": 38500,
+            "lineKind": "part"
+          },
+          {
+            "id": "l2",
+            "label": "バンパー塗装・調色",
+            "amountYen": 52000,
+            "lineKind": "labor"
+          },
+          {
+            "id": "l3",
+            "label": "左フロントフェンダー修理",
+            "amountYen": 22000,
+            "lineKind": "labor"
+          },
+          {
+            "id": "l4",
+            "label": "ヘッドランプアッシー（検討）",
+            "amountYen": 0,
+            "lineKind": "part"
+          }
+        ],
+        "totalYen": 112500
+      }
+    },
+    {
+      "id": "v-5678",
+      "displayId": "#5678",
+      "primeContractorName": "ホンダ販売 横浜店",
+      "customerName": "佐藤 花子",
+      "plateOffice": "横浜",
+      "plateClass": "500",
+      "plateHiragana": "い",
+      "plateNumber": "5678",
+      "vehicleName": "Honda STEP WGN",
+      "entryDate": "2026-05-14",
+      "status": "photo_done",
+      "galleryImages": [
+        {
+          "id": "h1",
+          "capturedAtDisplay": "10:15",
+          "caption": "全体前から",
+          "imageAlt": "車両正面"
+        },
+        {
+          "id": "h2",
+          "capturedAtDisplay": "10:16",
+          "caption": "右サイド",
+          "imageAlt": "右ドア"
+        },
+        {
+          "id": "h3",
+          "capturedAtDisplay": "10:17",
+          "caption": "リヤゲート",
+          "imageAlt": "バックドア"
+        }
+      ],
+      "aiAnalysisSummary": "写真撮影は完了しています。AI による損傷解析はキュー待ちです。",
+      "mamoEstimate": {
+        "title": "マモさんの見積（PDF）",
+        "thumbnailCaption": "5678_見積_draft.pdf"
+      },
+      "aiLearning": {
+        "progressPercent": 42,
+        "modelsTrained": 14
+      },
+      "aiDraftEstimate": {
+        "lines": [
+          {
+            "id": "m1",
+            "label": "仮／AIドラフト（確定前）",
+            "amountYen": 0,
+            "lineKind": "other"
+          }
+        ],
+        "totalYen": 0
+      }
+    },
+    {
+      "id": "v-2525",
+      "displayId": "#2525",
+      "primeContractorName": "日産プリンス 静岡",
+      "customerName": "鈴木 一郎",
+      "plateOffice": "富士",
+      "plateClass": "500",
+      "plateHiragana": "う",
+      "plateNumber": "2525",
+      "vehicleName": "Nissan NOTE",
+      "entryDate": "2026-05-15",
+      "status": "awaiting_intake",
+      "galleryImages": [],
+      "aiAnalysisSummary": "車両未到着のため解析ジョブは未作成です。",
+      "mamoEstimate": {
+        "title": "マモさんの見積（PDF）",
+        "thumbnailCaption": "未アップロード"
+      },
+      "aiLearning": {
+        "progressPercent": 0,
+        "modelsTrained": 14
+      },
+      "aiDraftEstimate": {
+        "lines": [],
+        "totalYen": 0
+      }
+    }
+  ]
+}

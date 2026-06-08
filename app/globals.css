@@ -60,6 +60,9 @@
   --tracking-wider: calc(var(--tracking-normal) + 0.05em);
   --tracking-widest: calc(var(--tracking-normal) + 0.1em);
   --tracking-normal: var(--tracking-normal);
+  /* 見積ダッシュボード（estimate-workspace-theme）用に上書きされる */
+  --color-estimate-canvas: var(--estimate-canvas);
+  --color-estimate-navy: var(--estimate-navy);
   --shadow-2xl: var(--shadow-2xl);
   --shadow-xl: var(--shadow-xl);
   --shadow-lg: var(--shadow-lg);
@@ -85,6 +88,9 @@
   --card: oklch(0.9972 0.0028 84.5587);
   --card-foreground: oklch(0.2354 0.0019 286.2536);
   --canvas: oklch(0.985 0.005 84);
+  /* 見積画面の固定トークン（クラスで上書き時の参照元） */
+  --estimate-canvas: #f8f9fa;
+  --estimate-navy: #1e3a5f;
   --popover: oklch(0.9972 0.0028 84.5587);
   --popover-foreground: oklch(0.2354 0.0019 286.2536);
   --primary: oklch(0.3732 0.0635 258.276);
@@ -141,6 +147,40 @@
     0px 4px 12px 0px hsl(0 0% 0% / 0.05), 0px 8px 10px -1px hsl(0 0% 0% / 0.05);
   --shadow-2xl: 0px 4px 12px 0px hsl(0 0% 0% / 0.13);
   --tracking-normal: 0;
+}
+
+/* ライトキャンバス #f8f9fa + アクセントネイビー #1e3a5f（見積ワークスペース） */
+.estimate-workspace-theme {
+  --background: #f8f9fa;
+  --foreground: #1a1d21;
+  --card: #ffffff;
+  --card-foreground: #1a1d21;
+  --canvas: #f8f9fa;
+  --estimate-canvas: #f8f9fa;
+  --estimate-navy: #1e3a5f;
+  --popover: #ffffff;
+  --popover-foreground: #1a1d21;
+  --primary: #1e3a5f;
+  --primary-foreground: #ffffff;
+  --secondary: #e8ecf1;
+  --secondary-foreground: #1e3a5f;
+  --muted: #eef1f4;
+  --muted-foreground: #5c6570;
+  --accent: #e8ecf1;
+  --accent-foreground: #1e3a5f;
+  --destructive: #c53030;
+  --border: #dde2e8;
+  --input: #dde2e8;
+  --ring: #1e3a5f;
+  --sidebar: #ffffff;
+  --sidebar-foreground: #1a1d21;
+  --sidebar-primary: #1e3a5f;
+  --sidebar-primary-foreground: #ffffff;
+  --sidebar-accent: #f0f3f6;
+  --sidebar-accent-foreground: #1e3a5f;
+  --sidebar-border: #e2e6ea;
+  --sidebar-ring: #1e3a5f;
+  --destructive-foreground: #ffffff;
 }
 
 .dark {

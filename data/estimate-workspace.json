@@ -1,0 +1,8 @@
+{
+  "name": "見積ワークスペース",
+  "icon": "calculator",
+  "appTitle": "Auto Estimation Data",
+  "dashboard": {
+    "aiAnalyzingPercent": 88
+  }
+}
