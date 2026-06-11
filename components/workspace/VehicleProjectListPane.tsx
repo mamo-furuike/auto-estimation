@@ -35,7 +35,8 @@ type VehicleProjectListPaneProps = {
   vehicles: Vehicle[];
   selectedVehicleId: string;
   onSelectVehicle: (id: string) => void;
-  onAddProject: (values: NewProjectFormValues) => void;
+  onAddProject: (values: NewProjectFormValues) => void | Promise<void>;
+  isCreatingProject?: boolean;
 };
 
 export function VehicleProjectListPane({
@@ -43,6 +44,7 @@ export function VehicleProjectListPane({
   selectedVehicleId,
   onSelectVehicle,
   onAddProject,
+  isCreatingProject = false,
 }: VehicleProjectListPaneProps) {
   const [dialogOpen, setDialogOpen] = useState(false);
 
@@ -139,6 +141,7 @@ export function VehicleProjectListPane({
         open={dialogOpen}
         onOpenChange={setDialogOpen}
         onSubmit={onAddProject}
+        isSubmitting={isCreatingProject}
       />
     </section>
   );

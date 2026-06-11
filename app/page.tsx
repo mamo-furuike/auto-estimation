@@ -5,8 +5,26 @@ import {
   vehiclesDataSchema,
   estimateWorkspaceSchema,
 } from "@/lib/estimate-schema";
+import { buildGallerySeedByVehicleId } from "@/lib/gallery-storage";
+import { listVehicleProjects } from "@/lib/vehicle-db";
 
-export default function Page() {
+export const dynamic = "force-dynamic";
+
+async function loadInitialVehicles() {
+  if (!process.env.DATABASE_URL) {
+    const parsed = vehiclesDataSchema.safeParse(estimateVehiclesData);
+    if (!parsed.success) {
+      throw new Error(
+        `DATABASE_URL が未設定で、シード JSON も不正です: ${parsed.error.issues[0]?.message}`,
+      );
+    }
+    return parsed.data.vehicles;
+  }
+
+  return listVehicleProjects();
+}
+
+export default async function Page() {
   const vehiclesResult = vehiclesDataSchema.safeParse(estimateVehiclesData);
   const wsResult = estimateWorkspaceSchema.safeParse(estimateWorkspaceData);
 
@@ -20,9 +38,23 @@ export default function Page() {
     throw new Error(`データの形式が正しくありません:\n${errors.join("\n")}`);
   }
 
+  const seedGalleries = buildGallerySeedByVehicleId(
+    vehiclesResult.data.vehicles,
+  );
+
+  let initialVehicles;
+  try {
+    initialVehicles = await loadInitialVehicles();
+  } catch (error) {
+    const message =
+      error instanceof Error ? error.message : "車両データの読み込みに失敗しました";
+    throw new Error(message);
+  }
+
   return (
     <Workspace
-      initialVehicles={vehiclesResult.data.vehicles}
+      initialVehicles={initialVehicles}
+      seedGalleries={seedGalleries}
       workspace={wsResult.data}
     />
   );

@@ -27,13 +27,15 @@ const EMPTY_FORM: NewProjectFormValues = {
 type NewProjectDialogProps = {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  onSubmit: (values: NewProjectFormValues) => void;
+  onSubmit: (values: NewProjectFormValues) => void | Promise<void>;
+  isSubmitting?: boolean;
 };
 
 export function NewProjectDialog({
   open,
   onOpenChange,
   onSubmit,
+  isSubmitting = false,
 }: NewProjectDialogProps) {
   const [form, setForm] = useState<NewProjectFormValues>(EMPTY_FORM);
 
@@ -53,9 +55,9 @@ export function NewProjectDialog({
     form.plateInput.trim() !== "" &&
     form.entryDate !== "";
 
-  const handleSubmit = () => {
-    if (!canSubmit) return;
-    onSubmit(form);
+  const handleSubmit = async () => {
+    if (!canSubmit || isSubmitting) return;
+    await onSubmit(form);
     resetForm();
     onOpenChange(false);
   };
@@ -135,7 +137,11 @@ export function NewProjectDialog({
 
         <DialogFooter>
           <DialogClose render={<Button variant="outline">キャンセル</Button>} />
-          <Button type="button" onClick={handleSubmit} disabled={!canSubmit}>
+          <Button
+            type="button"
+            onClick={() => void handleSubmit()}
+            disabled={!canSubmit || isSubmitting}
+          >
             追加
           </Button>
         </DialogFooter>
