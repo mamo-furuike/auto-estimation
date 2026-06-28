@@ -16,6 +16,8 @@ export const vehicleMetadataSchema = z.object({
     lines: z.array(aiDraftLineSchema),
     totalYen: z.number(),
   }),
+  /** Vercel Blob にアップロードした画像 URL */
+  images: z.array(z.string().url()).default([]),
 });
 
 export type VehicleMetadata = z.infer<typeof vehicleMetadataSchema>;
@@ -34,4 +36,5 @@ export const defaultVehicleMetadata: VehicleMetadata = {
     lines: [],
     totalYen: 0,
   },
+  images: [],
 };

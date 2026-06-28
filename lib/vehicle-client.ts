@@ -50,3 +50,18 @@ export async function updateVehicleViaApi(
   const data = await parseJson<VehicleResponse>(response);
   return data.vehicle;
 }
+
+type ProjectImagesResponse = { vehicle: Vehicle; images: string[] };
+
+export async function addProjectImagesViaApi(
+  projectId: string,
+  urls: string[],
+): Promise<Vehicle> {
+  const response = await fetch(`/api/projects/${projectId}/images`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ urls }),
+  });
+  const data = await parseJson<ProjectImagesResponse>(response);
+  return data.vehicle;
+}

@@ -107,3 +107,52 @@ export async function createGalleryImagesFromFiles(
 
   return images;
 }
+
+async function prepareUploadFile(file: File): Promise<File> {
+  if (!isHeicFile(file)) {
+    return file;
+  }
+
+  const { default: heic2any } = await import("heic2any");
+  const converted = await heic2any({
+    blob: file,
+    toType: "image/jpeg",
+    quality: 0.92,
+  });
+  const blob = Array.isArray(converted) ? converted[0] : converted;
+  if (!(blob instanceof Blob)) {
+    throw new Error("HEIC の変換に失敗しました");
+  }
+
+  const jpegName = file.name.replace(/\.(heic|heif)$/i, ".jpg");
+  return new File([blob], jpegName, { type: "image/jpeg" });
+}
+
+export async function uploadGalleryFileToBlob(file: File): Promise<string> {
+  const uploadFile = await prepareUploadFile(file);
+  const formData = new FormData();
+  formData.append("file", uploadFile);
+
+  const response = await fetch("/api/upload", {
+    method: "POST",
+    body: formData,
+  });
+
+  const data = (await response.json()) as { url?: string; error?: string };
+  if (!response.ok || !data.url) {
+    throw new Error(data.error ?? "アップロードに失敗しました");
+  }
+
+  return data.url;
+}
+
+export async function uploadGalleryFilesToBlob(
+  files: FileList | File[],
+): Promise<string[]> {
+  const list = Array.from(files).filter(isGalleryImageFile);
+  if (list.length === 0) {
+    return [];
+  }
+
+  return Promise.all(list.map((file) => uploadGalleryFileToBlob(file)));
+}

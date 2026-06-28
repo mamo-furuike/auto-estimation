@@ -24,13 +24,17 @@ describe("vehicle db mapper", () => {
         },
         aiLearning: { progressPercent: 88, modelsTrained: 14 },
         aiDraftEstimate: { lines: [], totalYen: 112500 },
+        images: ["https://blob.vercel-storage.com/test.jpg"],
       },
     };
 
     const vehicle = rowToVehicle(row);
     expect(vehicle.displayId).toBe("#1234");
     expect(vehicle.vehicleName).toBe("Toyota RAV4");
-    expect(vehicle.galleryImages).toEqual([]);
+    expect(vehicle.galleryImages).toHaveLength(1);
+    expect(vehicle.galleryImages[0]?.src).toBe(
+      "https://blob.vercel-storage.com/test.jpg",
+    );
     expect(vehicle.aiAnalysisSummary).toBe("テストサマリー");
   });
 });

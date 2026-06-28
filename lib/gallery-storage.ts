@@ -125,11 +125,15 @@ export function mergeWithGallerySeed(
   seedGalleries: Record<string, GalleryImage[]>,
   storedGalleries: Record<string, GalleryImage[]> | null,
 ): Vehicle[] {
-  return vehicles.map((vehicle) => ({
-    ...vehicle,
-    galleryImages:
-      storedGalleries?.[vehicle.id] ??
-      seedGalleries[vehicle.id] ??
-      vehicle.galleryImages,
-  }));
+  return vehicles.map((vehicle) => {
+    const stored = storedGalleries?.[vehicle.id];
+    if (stored) {
+      return { ...vehicle, galleryImages: stored };
+    }
+    if (vehicle.galleryImages.length > 0) {
+      return vehicle;
+    }
+    const seed = seedGalleries[vehicle.id];
+    return seed ? { ...vehicle, galleryImages: seed } : vehicle;
+  });
 }

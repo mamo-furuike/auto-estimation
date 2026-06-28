@@ -116,7 +116,7 @@ describe("gallery storage", () => {
     );
   });
 
-  it("seed gallery を stored より優先しない", () => {
+  it("localStorage の gallery を最優先する", () => {
     const parsed = vehiclesDataSchema.parse(estimateVehiclesData);
     const seed = buildGallerySeedByVehicleId(parsed.vehicles);
     const vehicle = parsed.vehicles[0]!;
@@ -142,5 +142,32 @@ describe("gallery storage", () => {
     );
 
     expect(merged[0]?.galleryImages[0]?.id).toBe("local");
+  });
+
+  it("DB の galleryImages を seed より優先する", () => {
+    const parsed = vehiclesDataSchema.parse(estimateVehiclesData);
+    const seed = buildGallerySeedByVehicleId(parsed.vehicles);
+    const vehicle = parsed.vehicles[0]!;
+
+    const merged = mergeWithGallerySeed(
+      [
+        {
+          ...vehicle,
+          galleryImages: [
+            {
+              id: "db",
+              capturedAtDisplay: "10:00",
+              caption: "from db",
+              imageAlt: "from db",
+              src: "https://blob.vercel-storage.com/db.jpg",
+            },
+          ],
+        },
+      ],
+      seed,
+      null,
+    );
+
+    expect(merged[0]?.galleryImages[0]?.id).toBe("db");
   });
 });

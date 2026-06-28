@@ -9,6 +9,8 @@ import {
   rowToVehicle,
   type VehicleProjectRow,
   vehicleToMetadata,
+  parseVehicleMetadata,
+  mergeMetadataImages,
 } from "@/lib/vehicle-db-mapper";
 
 export async function listVehicleProjects(): Promise<Vehicle[]> {
@@ -156,6 +158,64 @@ export async function updateVehicleProject(
   `;
 
   return next;
+}
+
+export async function appendVehicleProjectImages(
+  id: string,
+  urls: string[],
+): Promise<Vehicle | null> {
+  if (urls.length === 0) {
+    return null;
+  }
+
+  const sql = getSql();
+
+  const existingRows = await sql`
+    SELECT
+      id,
+      display_id,
+      vehicle_name,
+      prime_contractor_name,
+      customer_name,
+      plate_office,
+      plate_class,
+      plate_hiragana,
+      plate_number,
+      entry_date,
+      status,
+      metadata
+    FROM vehicle_projects
+    WHERE id = ${id}
+    LIMIT 1
+  `;
+
+  if (existingRows.length === 0) {
+    return null;
+  }
+
+  const row = existingRows[0] as VehicleProjectRow;
+  const current = rowToVehicle(row);
+  const metadata = mergeMetadataImages(
+    parseVehicleMetadata(row.metadata),
+    urls,
+  );
+  const nextStatus =
+    current.status === "awaiting_intake" ? "photo_done" : current.status;
+
+  await sql`
+    UPDATE vehicle_projects
+    SET
+      status = ${nextStatus},
+      metadata = ${JSON.stringify(metadata)}::jsonb,
+      updated_at = now()
+    WHERE id = ${id}
+  `;
+
+  return rowToVehicle({
+    ...row,
+    status: nextStatus,
+    metadata,
+  });
 }
 
 async function seedVehicleProjectsIfEmpty(): Promise<void> {

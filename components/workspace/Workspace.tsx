@@ -9,7 +9,7 @@
  *
  * データ永続化:
  * - 車両プロジェクト本体 → Neon（API 経由）
- * - 写真（data URL）→ localStorage
+ * - 写真 URL → Neon metadata.images + ギャラリー表示用 localStorage キャッシュ
  */
 
 import { useEffect, useMemo, useState } from "react";
@@ -20,7 +20,7 @@ import {
   type EstimateWorkspaceMeta,
 } from "@/lib/estimate-schema";
 import { type NewProjectFormValues } from "@/lib/estimate-vehicle-factory";
-import { createGalleryImagesFromFiles } from "@/lib/gallery-upload";
+import { uploadGalleryFilesToBlob } from "@/lib/gallery-upload";
 import {
   loadGalleryStorage,
   loadSelectedVehicleId,
@@ -31,7 +31,7 @@ import {
 } from "@/lib/gallery-storage";
 import {
   createVehicleViaApi,
-  updateVehicleViaApi,
+  addProjectImagesViaApi,
 } from "@/lib/vehicle-client";
 import { EstimateWorkspaceTopBar } from "@/components/workspace/EstimateWorkspaceTopBar";
 import { VehicleProjectListPane } from "@/components/workspace/VehicleProjectListPane";
@@ -118,30 +118,16 @@ export function Workspace({
     setSyncError(null);
 
     try {
-      const images = await createGalleryImagesFromFiles(files);
-      if (images.length === 0) return;
+      const urls = await uploadGalleryFilesToBlob(files);
+      if (urls.length === 0) return;
 
-      const current = vehicles.find((v) => v.id === selectedVehicleId);
-      if (!current) return;
-
-      const nextStatus =
-        current.status === "awaiting_intake" ? "photo_done" : current.status;
+      const updated = await addProjectImagesViaApi(selectedVehicleId, urls);
 
       setVehicles((prev) =>
         prev.map((vehicle) =>
-          vehicle.id === selectedVehicleId
-            ? {
-                ...vehicle,
-                galleryImages: [...vehicle.galleryImages, ...images],
-                status: nextStatus,
-              }
-            : vehicle,
+          vehicle.id === selectedVehicleId ? updated : vehicle,
         ),
       );
-
-      if (nextStatus !== current.status) {
-        await updateVehicleViaApi(selectedVehicleId, { status: nextStatus });
-      }
     } catch (error) {
       setSyncError(
         error instanceof Error ? error.message : "写真の保存に失敗しました",

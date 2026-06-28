@@ -4,6 +4,10 @@ import {
   vehicleStatusSchema,
 } from "@/lib/estimate-schema";
 import {
+  galleryImagesToMetadataUrls,
+  metadataImagesToGalleryImages,
+} from "@/lib/gallery-images-from-metadata";
+import {
   defaultVehicleMetadata,
   vehicleMetadataSchema,
   type VehicleMetadata,
@@ -26,7 +30,16 @@ export type VehicleProjectRow = {
 
 export function parseVehicleMetadata(value: unknown): VehicleMetadata {
   const parsed = vehicleMetadataSchema.safeParse(value);
-  return parsed.success ? parsed.data : defaultVehicleMetadata;
+  if (parsed.success) {
+    return parsed.data;
+  }
+
+  const fallback = vehicleMetadataSchema.safeParse({
+    ...defaultVehicleMetadata,
+    ...(typeof value === "object" && value !== null ? value : {}),
+  });
+
+  return fallback.success ? fallback.data : defaultVehicleMetadata;
 }
 
 export function rowToVehicle(row: VehicleProjectRow): Vehicle {
@@ -35,6 +48,8 @@ export function rowToVehicle(row: VehicleProjectRow): Vehicle {
     row.entry_date instanceof Date
       ? row.entry_date.toISOString().slice(0, 10)
       : String(row.entry_date).slice(0, 10);
+
+  const { images, ...vehicleMetadata } = metadata;
 
   const candidate = {
     id: row.id,
@@ -48,8 +63,8 @@ export function rowToVehicle(row: VehicleProjectRow): Vehicle {
     vehicleName: row.vehicle_name,
     entryDate,
     status: row.status,
-    galleryImages: [],
-    ...metadata,
+    galleryImages: metadataImagesToGalleryImages(images),
+    ...vehicleMetadata,
   };
 
   const statusParsed = vehicleStatusSchema.safeParse(candidate.status);
@@ -69,5 +84,18 @@ export function vehicleToMetadata(vehicle: Vehicle): VehicleMetadata {
     mamoEstimate: vehicle.mamoEstimate,
     aiLearning: vehicle.aiLearning,
     aiDraftEstimate: vehicle.aiDraftEstimate,
+    images: galleryImagesToMetadataUrls(vehicle.galleryImages),
+  };
+}
+
+export function mergeMetadataImages(
+  metadata: VehicleMetadata,
+  urls: string[],
+): VehicleMetadata {
+  const merged = [...metadata.images, ...urls];
+  const unique = [...new Set(merged)];
+  return {
+    ...metadata,
+    images: unique,
   };
 }
