@@ -34,6 +34,7 @@ import {
   createVehicleViaApi,
   addProjectImagesViaApi,
   setProjectPdfViaApi,
+  deleteProjectPdfViaApi,
   deleteProjectViaApi,
   fetchVehiclesFromApi,
 } from "@/lib/vehicle-client";
@@ -60,6 +61,7 @@ export function Workspace({
   const [isGalleryReady, setIsGalleryReady] = useState(false);
   const [isUploadingPhotos, setIsUploadingPhotos] = useState(false);
   const [isUploadingPdf, setIsUploadingPdf] = useState(false);
+  const [isDeletingPdf, setIsDeletingPdf] = useState(false);
   const [isCreatingProject, setIsCreatingProject] = useState(false);
   const [isDeletingProject, setIsDeletingProject] = useState(false);
   const [syncError, setSyncError] = useState<string | null>(null);
@@ -169,6 +171,31 @@ export function Workspace({
     }
   };
 
+  const handleDeletePdf = async () => {
+    if (!selectedVehicleId) return;
+
+    setIsDeletingPdf(true);
+    setSyncError(null);
+
+    try {
+      const updated = await deleteProjectPdfViaApi(selectedVehicleId);
+
+      setVehicles((prev) =>
+        prev.map((vehicle) =>
+          vehicle.id === selectedVehicleId ? updated : vehicle,
+        ),
+      );
+    } catch (error) {
+      setSyncError(
+        error instanceof Error
+          ? error.message
+          : "PDF の削除に失敗しました",
+      );
+    } finally {
+      setIsDeletingPdf(false);
+    }
+  };
+
   const handleDeleteProject = async (id: string) => {
     setIsDeletingProject(true);
     setSyncError(null);
@@ -235,7 +262,9 @@ export function Workspace({
         <EstimateAiTrainingPane
           vehicle={selectedVehicle}
           onUploadPdf={handleUploadPdf}
+          onDeletePdf={handleDeletePdf}
           isUploadingPdf={isUploadingPdf}
+          isDeletingPdf={isDeletingPdf}
         />
       </div>
     </div>

@@ -90,15 +90,20 @@ function LearningTrendSparkline() {
 type EstimateAiTrainingPaneProps = {
   vehicle: Vehicle | null;
   onUploadPdf?: (file: File) => Promise<void>;
+  onDeletePdf?: () => Promise<void>;
   isUploadingPdf?: boolean;
+  isDeletingPdf?: boolean;
 };
 
 export function EstimateAiTrainingPane({
   vehicle,
   onUploadPdf,
+  onDeletePdf,
   isUploadingPdf = false,
+  isDeletingPdf = false,
 }: EstimateAiTrainingPaneProps) {
   const pdfInputRef = useRef<HTMLInputElement>(null);
+  const isPdfBusy = isUploadingPdf || isDeletingPdf;
   if (!vehicle) {
     return (
       <section className="flex w-[min(100%,380px)] shrink-0 flex-col bg-muted/40 lg:w-[380px]">
@@ -118,7 +123,7 @@ export function EstimateAiTrainingPane({
   const hasPdf = Boolean(vehicle.pdfUrl);
 
   const handleSelectPdf = () => {
-    if (!isUploadingPdf) {
+    if (!isPdfBusy) {
       pdfInputRef.current?.click();
     }
   };
@@ -196,9 +201,9 @@ export function EstimateAiTrainingPane({
                         }
                   }
                 >
-                  {isUploadingPdf ? (
+                  {isPdfBusy ? (
                     <span className="px-2 text-center text-xs text-muted-foreground">
-                      アップロード中…
+                      {isDeletingPdf ? "削除中…" : "アップロード中…"}
                     </span>
                   ) : (
                     <>
@@ -214,21 +219,46 @@ export function EstimateAiTrainingPane({
                   )}
                 </div>
                 {hasPdf ? (
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="sm"
-                    className="w-full"
-                    render={
-                      <a
-                        href={vehicle.pdfUrl}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                      />
-                    }
-                  >
-                    PDF を表示
-                  </Button>
+                  <div className="flex flex-col gap-2">
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      className="w-full"
+                      disabled={isPdfBusy}
+                      render={
+                        <a
+                          href={vehicle.pdfUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                        />
+                      }
+                    >
+                      PDF を表示
+                    </Button>
+                    <div className="flex gap-2">
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        className="flex-1"
+                        onClick={handleSelectPdf}
+                        disabled={isPdfBusy || !onUploadPdf}
+                      >
+                        PDF を差し替え
+                      </Button>
+                      <Button
+                        type="button"
+                        variant="destructive"
+                        size="sm"
+                        className="flex-1"
+                        onClick={() => void onDeletePdf?.()}
+                        disabled={isPdfBusy || !onDeletePdf}
+                      >
+                        PDF を削除
+                      </Button>
+                    </div>
+                  </div>
                 ) : (
                   <Button
                     type="button"
@@ -236,7 +266,7 @@ export function EstimateAiTrainingPane({
                     size="sm"
                     className="w-full"
                     onClick={handleSelectPdf}
-                    disabled={isUploadingPdf || !onUploadPdf}
+                    disabled={isPdfBusy || !onUploadPdf}
                   >
                     PDF をアップロード
                   </Button>

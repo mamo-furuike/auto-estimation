@@ -71,7 +71,7 @@ export function rowToVehicle(row: VehicleProjectRow): Vehicle {
       ...vehicleMetadata.mamoEstimate,
       thumbnailCaption: pdf_url
         ? pdfCaptionFromUrl(pdf_url)
-        : vehicleMetadata.mamoEstimate.thumbnailCaption,
+        : "未アップロード",
     },
   };
 

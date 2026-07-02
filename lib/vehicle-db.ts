@@ -268,6 +268,59 @@ export async function setVehicleProjectPdfUrl(
   });
 }
 
+export async function clearVehicleProjectPdfUrl(
+  id: string,
+): Promise<Vehicle | null> {
+  const sql = getSql();
+
+  const existingRows = await sql`
+    SELECT
+      id,
+      display_id,
+      vehicle_name,
+      prime_contractor_name,
+      customer_name,
+      plate_office,
+      plate_class,
+      plate_hiragana,
+      plate_number,
+      entry_date,
+      status,
+      metadata
+    FROM vehicle_projects
+    WHERE id = ${id}
+    LIMIT 1
+  `;
+
+  if (existingRows.length === 0) {
+    return null;
+  }
+
+  const row = existingRows[0] as VehicleProjectRow;
+  const parsed = parseVehicleMetadata(row.metadata);
+  const metadata: VehicleMetadata = {
+    ...parsed,
+    pdf_url: null,
+    mamoEstimate: {
+      ...parsed.mamoEstimate,
+      thumbnailCaption: "未アップロード",
+    },
+  };
+
+  await sql`
+    UPDATE vehicle_projects
+    SET
+      metadata = ${JSON.stringify(metadata)}::jsonb,
+      updated_at = now()
+    WHERE id = ${id}
+  `;
+
+  return rowToVehicle({
+    ...row,
+    metadata,
+  });
+}
+
 export async function deleteVehicleProject(id: string): Promise<boolean> {
   const sql = getSql();
   const rows = await sql`

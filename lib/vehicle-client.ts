@@ -80,6 +80,16 @@ export async function setProjectPdfViaApi(
   return data.vehicle;
 }
 
+export async function deleteProjectPdfViaApi(
+  projectId: string,
+): Promise<Vehicle> {
+  const response = await fetch(`/api/projects/${projectId}/pdf`, {
+    method: "DELETE",
+  });
+  const data = await parseJson<ProjectPdfResponse>(response);
+  return data.vehicle;
+}
+
 export async function deleteProjectViaApi(projectId: string): Promise<void> {
   const response = await fetch(`/api/projects/${projectId}`, {
     method: "DELETE",
