@@ -25,6 +25,7 @@ describe("vehicle db mapper", () => {
         aiLearning: { progressPercent: 88, modelsTrained: 14 },
         aiDraftEstimate: { lines: [], totalYen: 112500 },
         images: ["https://blob.vercel-storage.com/test.jpg"],
+        pdf_url: "https://blob.vercel-storage.com/estimate.pdf",
       },
     };
 
@@ -35,6 +36,8 @@ describe("vehicle db mapper", () => {
     expect(vehicle.galleryImages[0]?.src).toBe(
       "https://blob.vercel-storage.com/test.jpg",
     );
+    expect(vehicle.pdfUrl).toBe("https://blob.vercel-storage.com/estimate.pdf");
+    expect(vehicle.mamoEstimate.thumbnailCaption).toBe("estimate.pdf");
     expect(vehicle.aiAnalysisSummary).toBe("テストサマリー");
   });
 });

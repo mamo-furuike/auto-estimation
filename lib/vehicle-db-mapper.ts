@@ -7,6 +7,7 @@ import {
   galleryImagesToMetadataUrls,
   metadataImagesToGalleryImages,
 } from "@/lib/gallery-images-from-metadata";
+import { pdfCaptionFromUrl } from "@/lib/pdf-upload";
 import {
   defaultVehicleMetadata,
   vehicleMetadataSchema,
@@ -49,7 +50,7 @@ export function rowToVehicle(row: VehicleProjectRow): Vehicle {
       ? row.entry_date.toISOString().slice(0, 10)
       : String(row.entry_date).slice(0, 10);
 
-  const { images, ...vehicleMetadata } = metadata;
+  const { images, pdf_url, ...vehicleMetadata } = metadata;
 
   const candidate = {
     id: row.id,
@@ -65,6 +66,13 @@ export function rowToVehicle(row: VehicleProjectRow): Vehicle {
     status: row.status,
     galleryImages: metadataImagesToGalleryImages(images),
     ...vehicleMetadata,
+    pdfUrl: pdf_url ?? undefined,
+    mamoEstimate: {
+      ...vehicleMetadata.mamoEstimate,
+      thumbnailCaption: pdf_url
+        ? pdfCaptionFromUrl(pdf_url)
+        : vehicleMetadata.mamoEstimate.thumbnailCaption,
+    },
   };
 
   const statusParsed = vehicleStatusSchema.safeParse(candidate.status);
@@ -85,6 +93,7 @@ export function vehicleToMetadata(vehicle: Vehicle): VehicleMetadata {
     aiLearning: vehicle.aiLearning,
     aiDraftEstimate: vehicle.aiDraftEstimate,
     images: galleryImagesToMetadataUrls(vehicle.galleryImages),
+    pdf_url: vehicle.pdfUrl ?? null,
   };
 }
 

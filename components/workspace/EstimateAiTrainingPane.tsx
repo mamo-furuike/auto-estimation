@@ -1,6 +1,7 @@
 "use client";
 
-import { MoreVertical, FileText } from "lucide-react";
+import { useRef } from "react";
+import { MoreVertical, FileText, Upload } from "lucide-react";
 
 import { type Vehicle } from "@/lib/estimate-schema";
 import { Button } from "@/components/ui/button";
@@ -88,9 +89,16 @@ function LearningTrendSparkline() {
 
 type EstimateAiTrainingPaneProps = {
   vehicle: Vehicle | null;
+  onUploadPdf?: (file: File) => Promise<void>;
+  isUploadingPdf?: boolean;
 };
 
-export function EstimateAiTrainingPane({ vehicle }: EstimateAiTrainingPaneProps) {
+export function EstimateAiTrainingPane({
+  vehicle,
+  onUploadPdf,
+  isUploadingPdf = false,
+}: EstimateAiTrainingPaneProps) {
+  const pdfInputRef = useRef<HTMLInputElement>(null);
   if (!vehicle) {
     return (
       <section className="flex w-[min(100%,380px)] shrink-0 flex-col bg-muted/40 lg:w-[380px]">
@@ -107,6 +115,21 @@ export function EstimateAiTrainingPane({ vehicle }: EstimateAiTrainingPaneProps)
   }
 
   const pct = vehicle.aiLearning.progressPercent;
+  const hasPdf = Boolean(vehicle.pdfUrl);
+
+  const handleSelectPdf = () => {
+    if (!isUploadingPdf) {
+      pdfInputRef.current?.click();
+    }
+  };
+
+  const handlePdfFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file || !onUploadPdf) return;
+    void onUploadPdf(file).finally(() => {
+      event.target.value = "";
+    });
+  };
 
   return (
     <section className="flex w-[min(100%,380px)] shrink-0 flex-col bg-muted/40 lg:w-[380px]">
@@ -143,19 +166,81 @@ export function EstimateAiTrainingPane({ vehicle }: EstimateAiTrainingPaneProps)
                 </p>
               </CardHeader>
               <CardContent className="flex flex-col gap-2 px-3">
+                <input
+                  ref={pdfInputRef}
+                  type="file"
+                  accept="application/pdf,.pdf"
+                  className="sr-only"
+                  aria-hidden
+                  tabIndex={-1}
+                  onChange={handlePdfFileChange}
+                />
                 <div
                   className="flex aspect-[4/3] flex-col items-center justify-center gap-2 rounded-md bg-muted ring-1 ring-border"
-                  role="img"
-                  aria-label="PDF サムネイル"
+                  role={hasPdf ? "img" : "button"}
+                  tabIndex={hasPdf ? undefined : 0}
+                  aria-label={
+                    hasPdf
+                      ? "PDF サムネイル"
+                      : "PDF をアップロード（クリックしてファイルを選択）"
+                  }
+                  onClick={hasPdf ? undefined : handleSelectPdf}
+                  onKeyDown={
+                    hasPdf
+                      ? undefined
+                      : (event) => {
+                          if (event.key === "Enter" || event.key === " ") {
+                            event.preventDefault();
+                            handleSelectPdf();
+                          }
+                        }
+                  }
                 >
-                  <FileText className="size-10 text-muted-foreground" />
-                  <span className="px-2 text-center text-[10px] text-muted-foreground">
-                    {vehicle.mamoEstimate.thumbnailCaption}
-                  </span>
+                  {isUploadingPdf ? (
+                    <span className="px-2 text-center text-xs text-muted-foreground">
+                      アップロード中…
+                    </span>
+                  ) : (
+                    <>
+                      {hasPdf ? (
+                        <FileText className="size-10 text-primary" />
+                      ) : (
+                        <Upload className="size-10 text-muted-foreground" />
+                      )}
+                      <span className="px-2 text-center text-[10px] text-muted-foreground">
+                        {vehicle.mamoEstimate.thumbnailCaption}
+                      </span>
+                    </>
+                  )}
                 </div>
-                <Button type="button" variant="outline" size="sm" className="w-full">
-                  PDF を表示
-                </Button>
+                {hasPdf ? (
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    className="w-full"
+                    render={
+                      <a
+                        href={vehicle.pdfUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                      />
+                    }
+                  >
+                    PDF を表示
+                  </Button>
+                ) : (
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    className="w-full"
+                    onClick={handleSelectPdf}
+                    disabled={isUploadingPdf || !onUploadPdf}
+                  >
+                    PDF をアップロード
+                  </Button>
+                )}
               </CardContent>
             </Card>
 

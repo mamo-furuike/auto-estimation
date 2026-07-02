@@ -21,6 +21,7 @@ import {
 } from "@/lib/estimate-schema";
 import { type NewProjectFormValues } from "@/lib/estimate-vehicle-factory";
 import { uploadGalleryFilesToBlob } from "@/lib/gallery-upload";
+import { uploadPdfFileToBlob } from "@/lib/pdf-upload";
 import {
   loadGalleryStorage,
   loadSelectedVehicleId,
@@ -32,6 +33,9 @@ import {
 import {
   createVehicleViaApi,
   addProjectImagesViaApi,
+  setProjectPdfViaApi,
+  deleteProjectViaApi,
+  fetchVehiclesFromApi,
 } from "@/lib/vehicle-client";
 import { EstimateWorkspaceTopBar } from "@/components/workspace/EstimateWorkspaceTopBar";
 import { VehicleProjectListPane } from "@/components/workspace/VehicleProjectListPane";
@@ -55,7 +59,9 @@ export function Workspace({
   );
   const [isGalleryReady, setIsGalleryReady] = useState(false);
   const [isUploadingPhotos, setIsUploadingPhotos] = useState(false);
+  const [isUploadingPdf, setIsUploadingPdf] = useState(false);
   const [isCreatingProject, setIsCreatingProject] = useState(false);
+  const [isDeletingProject, setIsDeletingProject] = useState(false);
   const [syncError, setSyncError] = useState<string | null>(null);
 
   const selectedVehicle = useMemo(
@@ -137,6 +143,66 @@ export function Workspace({
     }
   };
 
+  const handleUploadPdf = async (file: File) => {
+    if (!selectedVehicleId) return;
+
+    setIsUploadingPdf(true);
+    setSyncError(null);
+
+    try {
+      const url = await uploadPdfFileToBlob(file);
+      const updated = await setProjectPdfViaApi(selectedVehicleId, url);
+
+      setVehicles((prev) =>
+        prev.map((vehicle) =>
+          vehicle.id === selectedVehicleId ? updated : vehicle,
+        ),
+      );
+    } catch (error) {
+      setSyncError(
+        error instanceof Error
+          ? error.message
+          : "PDF の保存に失敗しました",
+      );
+    } finally {
+      setIsUploadingPdf(false);
+    }
+  };
+
+  const handleDeleteProject = async (id: string) => {
+    setIsDeletingProject(true);
+    setSyncError(null);
+
+    try {
+      await deleteProjectViaApi(id);
+
+      const refreshed = await fetchVehiclesFromApi();
+      const storedGalleries = loadGalleryStorage();
+      const merged = mergeWithGallerySeed(
+        refreshed,
+        seedGalleries,
+        storedGalleries,
+      );
+
+      setVehicles(merged);
+      setSelectedVehicleId((current) => {
+        if (merged.some((vehicle) => vehicle.id === current)) {
+          return current;
+        }
+        return merged[0]?.id ?? "";
+      });
+    } catch (error) {
+      setSyncError(
+        error instanceof Error
+          ? error.message
+          : "プロジェクトの削除に失敗しました",
+      );
+      throw error;
+    } finally {
+      setIsDeletingProject(false);
+    }
+  };
+
   return (
     <div className="estimate-workspace-theme flex h-screen w-full flex-col overflow-hidden bg-background text-foreground">
       <EstimateWorkspaceTopBar
@@ -157,14 +223,20 @@ export function Workspace({
           selectedVehicleId={selectedVehicleId}
           onSelectVehicle={setSelectedVehicleId}
           onAddProject={handleAddProject}
+          onDeleteProject={handleDeleteProject}
           isCreatingProject={isCreatingProject}
+          isDeletingProject={isDeletingProject}
         />
         <ImageGalleryPane
           vehicle={selectedVehicle}
           onAddPhotos={handleAddPhotos}
           isUploading={isUploadingPhotos}
         />
-        <EstimateAiTrainingPane vehicle={selectedVehicle} />
+        <EstimateAiTrainingPane
+          vehicle={selectedVehicle}
+          onUploadPdf={handleUploadPdf}
+          isUploadingPdf={isUploadingPdf}
+        />
       </div>
     </div>
   );

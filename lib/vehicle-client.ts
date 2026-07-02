@@ -52,6 +52,7 @@ export async function updateVehicleViaApi(
 }
 
 type ProjectImagesResponse = { vehicle: Vehicle; images: string[] };
+type ProjectPdfResponse = { vehicle: Vehicle; pdfUrl: string | null };
 
 export async function addProjectImagesViaApi(
   projectId: string,
@@ -65,3 +66,26 @@ export async function addProjectImagesViaApi(
   const data = await parseJson<ProjectImagesResponse>(response);
   return data.vehicle;
 }
+
+export async function setProjectPdfViaApi(
+  projectId: string,
+  url: string,
+): Promise<Vehicle> {
+  const response = await fetch(`/api/projects/${projectId}/pdf`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ url }),
+  });
+  const data = await parseJson<ProjectPdfResponse>(response);
+  return data.vehicle;
+}
+
+export async function deleteProjectViaApi(projectId: string): Promise<void> {
+  const response = await fetch(`/api/projects/${projectId}`, {
+    method: "DELETE",
+  });
+  await parseJson<{ ok: true }>(response);
+}
+
+/** @deprecated deleteProjectViaApi を使用してください */
+export const deleteVehicleViaApi = deleteProjectViaApi;

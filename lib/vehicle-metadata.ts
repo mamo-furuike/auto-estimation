@@ -18,6 +18,8 @@ export const vehicleMetadataSchema = z.object({
   }),
   /** Vercel Blob にアップロードした画像 URL */
   images: z.array(z.string().url()).default([]),
+  /** Vercel Blob にアップロードした見積 PDF URL */
+  pdf_url: z.string().url().nullable().default(null),
 });
 
 export type VehicleMetadata = z.infer<typeof vehicleMetadataSchema>;
@@ -37,4 +39,5 @@ export const defaultVehicleMetadata: VehicleMetadata = {
     totalYen: 0,
   },
   images: [],
+  pdf_url: null,
 };

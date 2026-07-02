@@ -48,6 +48,8 @@ export const vehicleSchema = z.object({
     lines: z.array(aiDraftLineSchema),
     totalYen: z.number(),
   }),
+  /** Vercel Blob にアップロードした見積 PDF URL */
+  pdfUrl: z.string().url().optional(),
 });
 
 export const vehiclesDataSchema = z.object({

@@ -20,6 +20,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { DeleteConfirmDialog } from "@/components/workspace/DeleteConfirmDialog";
 import { NewProjectDialog } from "@/components/workspace/NewProjectDialog";
 
 function formatEntryDate(iso: string) {
@@ -36,7 +37,9 @@ type VehicleProjectListPaneProps = {
   selectedVehicleId: string;
   onSelectVehicle: (id: string) => void;
   onAddProject: (values: NewProjectFormValues) => void | Promise<void>;
+  onDeleteProject: (id: string) => Promise<void>;
   isCreatingProject?: boolean;
+  isDeletingProject?: boolean;
 };
 
 export function VehicleProjectListPane({
@@ -44,9 +47,23 @@ export function VehicleProjectListPane({
   selectedVehicleId,
   onSelectVehicle,
   onAddProject,
+  onDeleteProject,
   isCreatingProject = false,
+  isDeletingProject = false,
 }: VehicleProjectListPaneProps) {
   const [dialogOpen, setDialogOpen] = useState(false);
+  const [deleteTarget, setDeleteTarget] = useState<Vehicle | null>(null);
+
+  const handleConfirmDelete = async () => {
+    if (!deleteTarget || isDeletingProject) return;
+
+    try {
+      await onDeleteProject(deleteTarget.id);
+      setDeleteTarget(null);
+    } catch {
+      // Workspace 側で syncError を表示
+    }
+  };
 
   return (
     <section className="flex w-[300px] shrink-0 flex-col border-r border-border bg-card">
@@ -100,16 +117,53 @@ export function VehicleProjectListPane({
                 aria-current={active ? "true" : undefined}
               >
                 <CardContent className="flex flex-col gap-3 px-3">
-                  <div className="flex flex-col gap-0.5">
-                    <span className="text-sm font-semibold text-foreground">
-                      {v.displayId} {v.vehicleName}
-                    </span>
-                    <span className="text-xs text-muted-foreground">
-                      {v.customerName} · {v.primeContractorName}
-                    </span>
-                    <span className="text-xs text-muted-foreground">
-                      {formatPlate(v)} · 入庫 {formatEntryDate(v.entryDate)}
-                    </span>
+                  <div className="flex items-start justify-between gap-1">
+                    <div className="flex min-w-0 flex-1 flex-col gap-0.5">
+                      <span className="text-sm font-semibold text-foreground">
+                        {v.displayId} {v.vehicleName}
+                      </span>
+                      <span className="text-xs text-muted-foreground">
+                        {v.customerName} · {v.primeContractorName}
+                      </span>
+                      <span className="text-xs text-muted-foreground">
+                        {formatPlate(v)} · 入庫 {formatEntryDate(v.entryDate)}
+                      </span>
+                    </div>
+                    <div
+                      className="shrink-0"
+                      onClick={(event) => event.stopPropagation()}
+                      onMouseDown={(event) => event.stopPropagation()}
+                      onKeyDown={(event) => event.stopPropagation()}
+                    >
+                      <DropdownMenu>
+                        <DropdownMenuTrigger
+                          render={
+                            <Button
+                              type="button"
+                              variant="ghost"
+                              size="icon-sm"
+                              aria-label={`${v.displayId} のメニュー`}
+                            >
+                              <MoreVertical className="size-4" />
+                            </Button>
+                          }
+                        />
+                        <DropdownMenuContent align="end">
+                          <DropdownMenuItem
+                            variant="destructive"
+                            disabled={isDeletingProject}
+                            onClick={() => {
+                              // Base UI Menu は onSelect 非対応。メニュー閉鎖後にダイアログを開く。
+                              window.setTimeout(() => {
+                                setDeleteTarget(v);
+                              }, 0);
+                            }}
+                          >
+                            削除
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    </div>
                   </div>
                   <div className="flex flex-wrap items-center gap-2">
                     <Badge
@@ -142,6 +196,23 @@ export function VehicleProjectListPane({
         onOpenChange={setDialogOpen}
         onSubmit={onAddProject}
         isSubmitting={isCreatingProject}
+      />
+
+      <DeleteConfirmDialog
+        open={deleteTarget !== null}
+        onOpenChange={(open) => {
+          if (!open && !isDeletingProject) {
+            setDeleteTarget(null);
+          }
+        }}
+        title="プロジェクトを削除"
+        itemName={
+          deleteTarget
+            ? `${deleteTarget.displayId} ${deleteTarget.vehicleName}`
+            : ""
+        }
+        onConfirm={handleConfirmDelete}
+        isConfirming={isDeletingProject}
       />
     </section>
   );
